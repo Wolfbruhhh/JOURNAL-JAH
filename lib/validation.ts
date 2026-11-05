@@ -1,0 +1,5 @@
+import {z} from 'zod';
+const text=z.string().max(10000), id=z.string().min(1).max(150),number=z.number().finite();
+const account=z.object({id,firm:z.string().min(1).max(100),name:z.string().min(1).max(100),size:number.positive().max(1e9),market:z.enum(['CFD','Futures']),stage:z.string().max(100)});
+const trade=z.object({id,accountId:id,date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>!isNaN(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v),symbol:z.string().min(1).max(30),direction:z.enum(['Long','Short']),quantity:number.positive().max(1e6),gross:number.min(-1e9).max(1e9),fees:number.min(0).max(1e8),risk:number.min(0).max(1e9),setup:z.string().max(100),session:z.string().max(100),emotion:z.string().max(100),plan:z.boolean(),stop:z.boolean(),reason:text,lesson:text,screenshot:z.string().max(2000).refine(v=>!v||v.startsWith('/api/screenshots/')||v.startsWith('https://')),createdAt:z.string().max(100)});
+export const schema=z.object({revision:z.number().int().nonnegative(),data:z.object({accounts:z.array(account).max(100),trades:z.array(trade).max(5000),dailyLimit:z.number().int().min(1).max(100),reflections:z.record(z.string().max(150),text)})});
